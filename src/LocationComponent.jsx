@@ -42,7 +42,7 @@ const LocationComponent = () => {
       {error && <p>Hata: {error}</p>}
       {location && (
         <p>
-          Konum: Enlem: {location.latitude}, Boylam: {location.longitude}
+          Location: latitude: {location.latitude}, longitude: {location.longitude}
         </p>
       )}
     </div>
