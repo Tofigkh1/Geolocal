@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import firebaseConfig from './firebaseConfig'; 
@@ -11,19 +11,15 @@ const LocationComponent = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const onSuccess = async (position) => {
+    const onSuccess = (position) => {
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
 
-      try {
-        await addDoc(collection(db, 'konumlar'), {
-          latitude,
-          longitude,
-          timestamp: new Date().toISOString() 
-        });
-      } catch (err) {
-        setError(err.message);
-      }
+      addDoc(collection(db, 'konumlar'), {
+        latitude,
+        longitude,
+        timestamp: new Date().toISOString() 
+      });
     };
 
     const onError = (error) => {
@@ -31,7 +27,7 @@ const LocationComponent = () => {
     };
 
     if (!navigator.geolocation) {
-      setError('Browser does not support location services.');
+      setError('browser not found location services.');
     } else {
       const watchId = navigator.geolocation.watchPosition(onSuccess, onError);
 
@@ -39,13 +35,14 @@ const LocationComponent = () => {
         navigator.geolocation.clearWatch(watchId);
       };
     }
-  }, []);
-// local
+  }, [db]);
+
   return (
     <div>
-      {error && <p>Hata: {error}</p>}
+ {error && <p>Hata: {error}</p>}
       {location && (
         <p>
+          Konum: Enlem: {location.latitude}, Boylam: {location.longitude}
           Location: latitude: {location.latitude}, longitude: {location.longitude}
         </p>
       )}
