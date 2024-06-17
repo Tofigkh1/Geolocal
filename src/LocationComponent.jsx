@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import firebaseConfig from './firebaseConfig'; 
@@ -11,15 +11,19 @@ const LocationComponent = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const onSuccess = (position) => {
+    const onSuccess = async (position) => {
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
 
-      addDoc(collection(db, 'konumlar'), {
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString() 
-      });
+      try {
+        await addDoc(collection(db, 'konumlar'), {
+          latitude,
+          longitude,
+          timestamp: new Date().toISOString() 
+        });
+      } catch (err) {
+        setError(err.message);
+      }
     };
 
     const onError = (error) => {
@@ -27,7 +31,7 @@ const LocationComponent = () => {
     };
 
     if (!navigator.geolocation) {
-      setError('browser not found location services.');
+      setError('Browser does not support location services.');
     } else {
       const watchId = navigator.geolocation.watchPosition(onSuccess, onError);
 
@@ -35,7 +39,7 @@ const LocationComponent = () => {
         navigator.geolocation.clearWatch(watchId);
       };
     }
-  }, [db]);
+  }, []);
 
   return (
     <div>
