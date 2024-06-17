@@ -1,10 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import firebaseConfig from './firebaseConfig'; 
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 
 const LocationComponent = () => {
   const [location, setLocation] = useState(null);
@@ -14,36 +8,32 @@ const LocationComponent = () => {
     const onSuccess = (position) => {
       const { latitude, longitude } = position.coords;
       setLocation({ latitude, longitude });
-
-      addDoc(collection(db, 'konumlar'), {
-        latitude,
-        longitude,
-        timestamp: new Date().toISOString() 
-      });
     };
 
     const onError = (error) => {
-      setError(error.message);
+      if (error.code === 1) {
+        setError('Konum hizmetleri kapalı. Lütfen tarayıcı ayarlarından konumu etkinleştirin.');
+      } else {
+        setError(error.message);
+      }
     };
 
-    if (!navigator.geolocation) {
-      setError('browser not found location services.');
+    if (navigator.geolocation) {
+      navigator.geolocation.watchPosition(onSuccess, onError);
     } else {
-      const watchId = navigator.geolocation.watchPosition(onSuccess, onError);
-
-      return () => {
-        navigator.geolocation.clearWatch(watchId);
-      };
+      setError('Tarayıcı konum hizmetlerini desteklemiyor.');
     }
-  }, [db]);
+
+    // Bileşen kullanımdan çıktığında konum izlemesini durdurmak için temizleme işlevi
+    return () => navigator.geolocation && navigator.geolocation.clearWatch();
+  }, []);
 
   return (
     <div>
- {error && <p>Hata: {error}</p>}
+      {error && <p>Hata: {error}</p>}
       {location && (
         <p>
           Konum: Enlem: {location.latitude}, Boylam: {location.longitude}
-          Location: latitude: {location.latitude}, longitude: {location.longitude}
         </p>
       )}
     </div>
