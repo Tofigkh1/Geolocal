@@ -40,7 +40,7 @@ const LocationComponent = () => {
       };
     }
   }, []);
-
+// local
   return (
     <div>
       {error && <p>Hata: {error}</p>}
